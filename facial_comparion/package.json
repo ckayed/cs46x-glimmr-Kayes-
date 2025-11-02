@@ -1,0 +1,12 @@
+{
+  "name": "compreface-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "axios": "^1.13.1",
+    "express": "^4.19.2",
+    "form-data": "^4.0.4",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^3.3.2"
+  }
+}

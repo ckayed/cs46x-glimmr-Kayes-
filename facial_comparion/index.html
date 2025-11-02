@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Glimmr CompreFace Trial</title>
+</head>
+<body>
+  <h1>Glimmr 10/29 Image Comparison Verification Demo</h1>
+
+<form id="verifyForm" enctype="multipart/form-data">
+
+  <p>Load Image 1:</p>
+  <input
+    type="file"
+    id="photo1"
+    name="file1"
+    accept="image/*">
+  <br><br>
+
+  <p>Load Image 2:</p>
+  <input 
+    type="file"
+    id="photo2"
+    name="file2"
+    accept="image/*">
+  <br><br>
+
+  <div id="preview">
+    <img
+      id="img1"
+      src=""
+      alt="Preview 1"
+      width="200"
+    >
+    <img
+      id="img2"
+      src=""
+      alt="Preview 2"
+      width="200"
+    >
+  </div>
+
+  <br>
+  <button
+    type="submit"
+    id="verifyBtn">Verify Faces</button>
+</form>
+
+<h2>Result:</h2>
+<p id="result"></p>
+
+<script>
+// Preview Images
+// https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById
+// When photo one is selected, set souurce of img1 to a temp URL
+document.getElementById("photo1").addEventListener("change", function() {
+  document.getElementById("img1").src = URL.createObjectURL(this.files[0]);
+});
+
+// when photo2 is chages, set img to to temp URL
+document.getElementById("photo2").addEventListener("change", function() {
+  document.getElementById("img2").src = URL.createObjectURL(this.files[0]);
+});
+
+// Verifying images
+// add listener to form with ID verifyForm and prevent page reload
+document.getElementById("verifyForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  // set imgData  in POST
+  const imgData = new FormData();
+  //add file(img file) from input to rq
+  imgData.append("file1", document.getElementById("photo1").files[0]);
+  imgData.append("file2", document.getElementById("photo2").files[0]);
+
+  // get outputArea so we can update with result
+  const outputArea = document.getElementById("result");
+  outputArea.innerText = "Processing...";
+
+  try {
+    // send imgs to serve -> /verify
+    const response = await fetch("/verify", {
+      method: "POST",
+      body: imgData
+    });
+
+    // Parse JSON
+    const data = await response.json();
+    // debug 
+    console.log("Client Response:", data);
+
+    // If it matches YAY. Show similiarity score percentage
+    if (data.verified) {
+      outputArea.innerHTML = `(V) YAY MATCH - Similarity Score: ${(data.similarity * 100).toFixed(2)}%`;
+      outputArea.style.color = "green";
+
+      // else failure. Still show score
+    } else {
+      outputArea.innerHTML = `(X) NAUR MATCH - Similarity Score: ${(data.similarity * 100).toFixed(2)}%`;
+      outputArea.style.color = "red";
+    }
+
+    // in case of connectivity rq failures/issues reading
+  } catch (err) {
+    console.error("Error:", err);
+    outputArea.innerText = "Error verifying images.";
+    outputArea.style.color = "red";
+  }
+});
+</script>
